@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -25,6 +26,8 @@ public class Member {
     private String pw;
     private String nickname;
     private boolean social;
+    @Column(unique = true)
+    private String kakaoId;
 
     @ElementCollection
     @Enumerated(EnumType.STRING)
@@ -33,5 +36,14 @@ public class Member {
 
     public void addRole(MemberRole role) {
         memberRoleList.add(role);
+    }
+
+    public void changePassword(String encodedPassword) {
+        pw = encodedPassword;
+        social = false;
+    }
+
+    public void changeNickname(String value) {
+        nickname = value;
     }
 }

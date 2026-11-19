@@ -6,6 +6,8 @@ import java.util.Map;
 import lombok.Getter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.zerock.mallapi.domain.Member;
+import org.zerock.mallapi.domain.MemberRole;
 
 @Getter
 public class MemberDTO extends User {
@@ -25,6 +27,11 @@ public class MemberDTO extends User {
 
     public String getEmail() {
         return getUsername();
+    }
+
+    public static MemberDTO from(Member member) {
+        return new MemberDTO(member.getEmail(), member.getPw(), member.getNickname(), member.isSocial(),
+                member.getMemberRoleList().stream().map(MemberRole::name).toList());
     }
 
     public Map<String, Object> getClaims() {

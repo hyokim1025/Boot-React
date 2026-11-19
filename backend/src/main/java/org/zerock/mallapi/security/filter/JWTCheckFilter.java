@@ -23,7 +23,8 @@ import org.zerock.mallapi.util.JWTUtil;
 @RequiredArgsConstructor
 public class JWTCheckFilter extends OncePerRequestFilter {
 
-    private static final Set<String> MEMBER_ENDPOINTS = Set.of("/api/member/login", "/api/member/refresh");
+    private static final Set<String> MEMBER_ENDPOINTS = Set.of(
+            "/api/member/login", "/api/member/refresh", "/api/member/kakao", "/api/member/kakao/start");
 
     private final JWTUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;

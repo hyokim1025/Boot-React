@@ -1,7 +1,6 @@
 package org.zerock.mallapi.config;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,7 +59,8 @@ public class CustomSecurityConfig {
                 .authorizeHttpRequests(config -> config
                         .requestMatchers(HttpMethod.POST, "/api/member/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/member/refresh", "/api/products/view/*").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/member/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/member/refresh",
+                                "/api/member/kakao", "/api/member/kakao/start").permitAll()
                         .requestMatchers(HttpMethod.HEAD, "/api/products/view/*").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())
@@ -69,9 +69,7 @@ public class CustomSecurityConfig {
                         .loginProcessingUrl("/api/member/login")
                         .successHandler((request, response, authentication) -> {
                             MemberDTO member = (MemberDTO) authentication.getPrincipal();
-                            Map<String, Object> data = new HashMap<>(member.getClaims());
-                            data.putAll(jwtUtil.issueTokens(member.getEmail()));
-                            writeJson(mapper, response, HttpServletResponse.SC_OK, data);
+                            writeJson(mapper, response, HttpServletResponse.SC_OK, jwtUtil.issueSession(member));
                         })
                         .failureHandler((request, response, failure) ->
                                 writeJson(mapper, response, HttpServletResponse.SC_UNAUTHORIZED, Map.of("error", "ERROR_LOGIN"))))

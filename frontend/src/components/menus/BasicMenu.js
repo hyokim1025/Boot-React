@@ -26,7 +26,8 @@ const BasicMenu = () => {
           )}
         </ul>
       </div>
-      <div className="w-1/5 flex justify-end bg-orange-300 p-4 font-medium">
+      <div className="w-1/5 flex flex-wrap items-center justify-end gap-x-3 bg-orange-300 p-4 font-medium">
+        {member && <Link className="text-white text-sm" to="/member/modify">회원정보 수정</Link>}
         <Link className="text-white text-sm m-1 rounded"
           to={member ? '/member/logout' : '/member/login'}>
           {member ? 'Logout' : 'Login'}

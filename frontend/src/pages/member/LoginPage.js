@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import BasicMenu from '../../components/menus/BasicMenu';
+import KakaoLoginComponent from '../../components/member/KakaoLoginComponent';
 import useCustomLogin from '../../hooks/useCustomLogin';
 
 const LoginPage = () => {
   const { isLogin, status, error, doLogin } = useCustomLogin();
   const { state } = useLocation();
   const [credentials, setCredentials] = useState({ email: '', pw: '' });
-  const from = typeof state?.from === 'string' && /^\/(todo|products)(?:[/?]|$)/.test(state.from)
+  const from = typeof state?.from === 'string'
+    && /^\/(todo|products|member\/modify)(?:[/?]|$)/.test(state.from)
     ? state.from : '/';
 
   const handleChange = ({ target: { name, value } }) => {
@@ -53,6 +55,7 @@ const LoginPage = () => {
               LOGIN
             </button>
           </div>
+          <KakaoLoginComponent />
         </form>
       </main>
     </>

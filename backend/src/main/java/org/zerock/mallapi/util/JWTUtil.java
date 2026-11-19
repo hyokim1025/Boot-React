@@ -3,6 +3,7 @@ package org.zerock.mallapi.util;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -17,6 +18,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.zerock.mallapi.dto.MemberDTO;
 
 @Component
 public class JWTUtil {
@@ -39,7 +41,13 @@ public class JWTUtil {
         this.refreshTtl = refreshTtl;
     }
 
-    public Map<String, String> issueTokens(String email) {
+    public Map<String, Object> issueSession(MemberDTO member) {
+        Map<String, Object> session = new HashMap<>(member.getClaims());
+        session.putAll(issueTokens(member.getEmail()));
+        return session;
+    }
+
+    private Map<String, String> issueTokens(String email) {
         String session = UUID.randomUUID().toString();
         return Map.of(
                 "accessToken", generateToken(email, session, ACCESS, accessTtl),

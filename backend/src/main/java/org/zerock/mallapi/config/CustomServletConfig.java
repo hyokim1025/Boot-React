@@ -16,6 +16,13 @@ public class CustomServletConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        for (String path : new String[] {"/api/member/kakao/start", "/api/member/kakao"}) {
+            registry.addMapping(path)
+                    .allowedOrigins("http://localhost:3000")
+                    .allowedMethods("POST")
+                    .allowedHeaders("Content-Type")
+                    .allowCredentials(true);
+        }
         registry.addMapping("/api/**")
                 .allowedOrigins("http://localhost:3000", "http://127.0.0.1:3000")
                 .allowedMethods("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS")
