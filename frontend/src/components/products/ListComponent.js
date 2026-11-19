@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { getImageUrl, getList } from '../../api/productsApi';
+import useCustomLogin from '../../hooks/useCustomLogin';
 import useCustomMove from '../../hooks/useCustomMove';
 import FetchingModal from '../common/FetchingModal';
 import PageComponent from '../common/PageComponent';
 
 const ListComponent = () => {
+  const { exceptionHandle } = useCustomLogin();
   const { page, size, refresh, moveToList, moveToRead } = useCustomMove('/products');
   const [serverData, setServerData] = useState(null);
   const [fetching, setFetching] = useState(true);
@@ -17,10 +19,10 @@ const ListComponent = () => {
 
     getList({ page, size }, controller.signal)
       .then(setServerData)
-      .catch(() => {
+      .catch((failure) => {
         if (!controller.signal.aborted) {
           setServerData(null);
-          setError('상품 목록을 불러오지 못했습니다.');
+          setError(exceptionHandle(failure, '상품 목록을 불러오지 못했습니다.'));
         }
       })
       .finally(() => {
@@ -30,7 +32,7 @@ const ListComponent = () => {
       });
 
     return () => controller.abort();
-  }, [page, size, refresh]);
+  }, [page, size, refresh, exceptionHandle]);
 
   return (
     <div className="mx-2 mt-10 border-2 border-blue-100">
