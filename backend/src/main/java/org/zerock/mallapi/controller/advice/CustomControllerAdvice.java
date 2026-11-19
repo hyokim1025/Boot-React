@@ -21,6 +21,6 @@ public class CustomControllerAdvice {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> invalidInput(MethodArgumentNotValidException exception) {
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
-                .body(Map.of("msg", "Invalid Todo data or pagination parameters"));
+                .body(Map.of("msg", "Invalid request data"));
     }
 }
