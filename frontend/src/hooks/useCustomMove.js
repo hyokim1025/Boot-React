@@ -5,7 +5,7 @@ const getNumber = (value, fallback, max) => {
   return Number.isInteger(number) && number >= 1 && number <= max ? number : fallback;
 };
 
-const useCustomMove = () => {
+const useCustomMove = (basePath = '/todo') => {
   const navigate = useNavigate();
   const { key: refresh } = useLocation();
   const [queryParams] = useSearchParams();
@@ -16,13 +16,13 @@ const useCustomMove = () => {
 
   const moveToList = ({ page: nextPage = page, size: nextSize = size } = {}) => {
     navigate({
-      pathname: '/todo/list',
+      pathname: `${basePath}/list`,
       search: createSearchParams({ page: nextPage, size: nextSize }).toString(),
     });
   };
 
-  const moveToRead = (tno) => navigate({ pathname: `/todo/read/${tno}`, search });
-  const moveToModify = (tno) => navigate({ pathname: `/todo/modify/${tno}`, search });
+  const moveToRead = (id) => navigate({ pathname: `${basePath}/read/${id}`, search });
+  const moveToModify = (id) => navigate({ pathname: `${basePath}/modify/${id}`, search });
 
   return { page, size, refresh, moveToList, moveToRead, moveToModify };
 };

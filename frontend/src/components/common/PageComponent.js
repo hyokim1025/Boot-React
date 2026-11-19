@@ -1,4 +1,4 @@
-const PageComponent = ({ serverData, movePage }) => {
+const PageComponent = ({ serverData, movePage, ariaLabel = 'Todo pages' }) => {
   const { prev, prevPage, pageNumList, current, next, nextPage } = serverData;
 
   if (!pageNumList.length && !prev && !next) {
@@ -6,7 +6,7 @@ const PageComponent = ({ serverData, movePage }) => {
   }
 
   return (
-    <nav className="m-6 flex flex-wrap justify-center" aria-label="Todo pages">
+    <nav className="m-6 flex flex-wrap justify-center" aria-label={ariaLabel}>
       {prev && (
         <button type="button" className="m-2 p-2 w-16 font-bold text-blue-400"
           onClick={() => movePage({ page: prevPage })}>
