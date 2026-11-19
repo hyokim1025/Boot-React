@@ -1,0 +1,17 @@
+**/node_modules/
+**/dist/
+**/.gradle/
+**/build/
+**/bin/
+.local/
+upload/
+.env
+.env.*
+!.env.example
+!frontend/.env.development
+application-local.properties
+*.log
+*.hwp
+*.pdf
+*.zip
+.DS_Store
