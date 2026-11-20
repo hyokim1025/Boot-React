@@ -1,5 +1,9 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import { deleteOne, getImageUrl, postAdd, putOne } from '../../api/productsApi';
+import { deleteOne, getImageUrl, postAdd, productDetailKey, productListKey, putOne } from '../../api/productsApi';
+import { cartKey } from '../../atoms/cartState';
+import { getSession } from '../../atoms/signinState';
+import useCustomLogin from '../../hooks/useCustomLogin';
 import useCustomMove from '../../hooks/useCustomMove';
 import FetchingModal from '../common/FetchingModal';
 import ResultModal from '../common/ResultModal';
@@ -10,6 +14,26 @@ const inputClass = 'w-full min-w-0 rounded-r border border-neutral-300 p-4 shado
 const ProductForm = ({ product }) => {
   const pno = product?.pno;
   const { moveToList, moveToRead } = useCustomMove('/products');
+  const { sessionId } = useCustomLogin();
+  const queryClient = useQueryClient();
+  const { mutateAsync, isPending: fetching } = useMutation({
+    mutationFn: ({ formData, remove }) => {
+      if (remove) return deleteOne(pno, sessionId);
+      return pno ? putOne(pno, formData, sessionId) : postAdd(formData, sessionId);
+    },
+    onSuccess: (_, { remove }) => {
+      if (getSession().sessionId !== sessionId) return;
+      const invalidations = [queryClient.invalidateQueries({ queryKey: productListKey(sessionId) })];
+      if (pno) {
+        invalidations.push(queryClient.invalidateQueries({
+          queryKey: productDetailKey(sessionId, pno),
+          refetchType: remove ? 'none' : 'active',
+        }));
+        invalidations.push(queryClient.invalidateQueries({ queryKey: cartKey(sessionId) }));
+      }
+      return Promise.all(invalidations);
+    },
+  });
   const [details, setDetails] = useState({
     pname: product?.pname ?? '',
     pdesc: product?.pdesc ?? '',
@@ -18,7 +42,6 @@ const ProductForm = ({ product }) => {
   const [retainedFiles, setRetainedFiles] = useState(product?.uploadFileNames ?? []);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
-  const [fetching, setFetching] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const uploadRef = useRef(null);
@@ -46,14 +69,12 @@ const ProductForm = ({ product }) => {
       formData.append('files', file);
     }
 
-    setFetching(true);
     setError('');
     try {
+      const { result: id } = await mutateAsync({ formData });
       if (pno) {
-        await putOne(pno, formData);
         setResult({ content: 'Modified', next: 'read' });
       } else {
-        const { result: id } = await postAdd(formData);
         setResult({ content: `${id}번 등록 완료`, next: 'list' });
       }
     } catch (failure) {
@@ -64,21 +85,16 @@ const ProductForm = ({ product }) => {
       } else {
         setError('상품을 저장하지 못했습니다. 입력값과 API 서버를 확인하세요.');
       }
-    } finally {
-      setFetching(false);
     }
   };
 
   const removeProduct = async () => {
-    setFetching(true);
     setError('');
     try {
-      await deleteOne(pno);
+      await mutateAsync({ remove: true });
       setResult({ content: 'Deleted', next: 'list' });
     } catch {
       setError('상품을 삭제하지 못했습니다.');
-    } finally {
-      setFetching(false);
     }
   };
 
@@ -86,6 +102,7 @@ const ProductForm = ({ product }) => {
     if (result.next === 'read') {
       moveToRead(pno);
     } else {
+      if (pno) queryClient.removeQueries({ queryKey: productDetailKey(sessionId, pno) });
       moveToList({ page: 1 });
     }
   };

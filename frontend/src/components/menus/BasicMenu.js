@@ -1,8 +1,9 @@
-import { useSelector } from 'react-redux';
+import { useRecoilValue } from 'recoil';
 import { Link } from 'react-router-dom';
+import signinState from '../../atoms/signinState';
 
 const BasicMenu = () => {
-  const member = useSelector((state) => state.loginSlice.member);
+  const { member } = useRecoilValue(signinState);
 
   return (
     <nav id="navbar" className="flex bg-blue-300">

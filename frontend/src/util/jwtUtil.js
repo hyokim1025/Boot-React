@@ -1,14 +1,13 @@
 import axios from 'axios';
 import { API_SERVER_HOST, refreshJWT } from '../api/memberApi';
-import { logout, updateTokens } from '../slices/loginSlice';
-import store from '../store';
+import { endSession, getSession, updateSessionTokens } from '../atoms/signinState';
 
 const jwtAxios = axios.create({ baseURL: API_SERVER_HOST });
 const apiOrigin = new URL(API_SERVER_HOST).origin;
 let pendingRefresh;
 
 jwtAxios.interceptors.request.use((config) => {
-  const { member, sessionId } = store.getState().loginSlice;
+  const { member, sessionId } = getSession();
 
   if (config.authSession && config.authSession !== sessionId) {
     throw new axios.CanceledError('Login changed');
@@ -31,11 +30,11 @@ const refreshOnce = (sessionId, member) => {
       if (!accessToken || !refreshToken) {
         throw new Error('Invalid refresh response');
       }
-      store.dispatch(updateTokens({ sessionId, accessToken, refreshToken }));
+      updateSessionTokens(sessionId, accessToken, refreshToken);
     })
     .catch((failure) => {
-      if (failure.response?.status === 401 && store.getState().loginSlice.sessionId === sessionId) {
-        store.dispatch(logout());
+      if (failure.response?.status === 401 && getSession().sessionId === sessionId) {
+        endSession();
       }
       throw failure;
     })
@@ -56,13 +55,13 @@ jwtAxios.interceptors.response.use((response) => response, async (failure) => {
     throw failure;
   }
 
-  const { member, sessionId } = store.getState().loginSlice;
+  const { member, sessionId } = getSession();
   if (!member || sessionId !== config.authSession) {
     throw failure;
   }
   if (config.authRetried) {
     if (config.headers.get('Authorization') === `Bearer ${member.accessToken}`) {
-      store.dispatch(logout());
+      endSession();
     }
     throw failure;
   }
@@ -71,7 +70,7 @@ jwtAxios.interceptors.response.use((response) => response, async (failure) => {
   if (config.headers.get('Authorization') === `Bearer ${member.accessToken}`) {
     await refreshOnce(sessionId, member);
   }
-  if (store.getState().loginSlice.sessionId !== sessionId || config.signal?.aborted) {
+  if (getSession().sessionId !== sessionId || config.signal?.aborted) {
     throw failure;
   }
   return jwtAxios(config);

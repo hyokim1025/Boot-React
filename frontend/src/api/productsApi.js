@@ -3,28 +3,31 @@ import jwtAxios from '../util/jwtUtil';
 
 const host = `${API_SERVER_HOST}/api/products`;
 
-export const getList = async ({ page, size }, signal) => {
-  const response = await jwtAxios.get(`${host}/list`, { params: { page, size }, signal });
+export const productListKey = (sessionId) => ['products', sessionId, 'list'];
+export const productDetailKey = (sessionId, pno) => ['products', sessionId, 'detail', String(pno)];
+
+export const getList = async ({ page, size }, { signal, sessionId }) => {
+  const response = await jwtAxios.get(`${host}/list`, { params: { page, size }, signal, authSession: sessionId });
   return response.data;
 };
 
-export const getOne = async (pno, signal) => {
-  const response = await jwtAxios.get(`${host}/${pno}`, { signal });
+export const getOne = async (pno, { signal, sessionId }) => {
+  const response = await jwtAxios.get(`${host}/${pno}`, { signal, authSession: sessionId });
   return response.data;
 };
 
-export const postAdd = async (formData) => {
-  const response = await jwtAxios.post(`${host}/`, formData);
+export const postAdd = async (formData, sessionId) => {
+  const response = await jwtAxios.post(`${host}/`, formData, { authSession: sessionId });
   return response.data;
 };
 
-export const putOne = async (pno, formData) => {
-  const response = await jwtAxios.put(`${host}/${pno}`, formData);
+export const putOne = async (pno, formData, sessionId) => {
+  const response = await jwtAxios.put(`${host}/${pno}`, formData, { authSession: sessionId });
   return response.data;
 };
 
-export const deleteOne = async (pno) => {
-  const response = await jwtAxios.delete(`${host}/${pno}`);
+export const deleteOne = async (pno, sessionId) => {
+  const response = await jwtAxios.delete(`${host}/${pno}`, { authSession: sessionId });
   return response.data;
 };
 

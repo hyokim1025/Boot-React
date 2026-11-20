@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useRecoilValue } from 'recoil';
+import { cartTotalState } from '../../atoms/cartState';
 import useCustomCart from '../../hooks/useCustomCart';
 import useCustomLogin from '../../hooks/useCustomLogin';
 import CartItemComponent from '../cart/CartItemComponent';
@@ -6,16 +7,9 @@ import CartItemComponent from '../cart/CartItemComponent';
 const CartComponent = () => {
   const { isLogin, loginState } = useCustomLogin();
   const { cartItems, loaded, busy, error, refreshCart, changeCart } = useCustomCart();
-
-  useEffect(() => {
-    if (isLogin) {
-      refreshCart();
-    }
-  }, [isLogin, refreshCart]);
+  const total = useRecoilValue(cartTotalState);
 
   if (!isLogin) return null;
-
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   return (
     <section className="w-full min-w-0" aria-label="장바구니">
@@ -27,7 +21,7 @@ const CartComponent = () => {
       {error && (
         <div className="my-2">
           <p role="alert" className="text-red-800">{error}</p>
-          <button type="button" className="underline" onClick={refreshCart}>다시 불러오기</button>
+          <button type="button" className="underline" disabled={busy} onClick={refreshCart}>다시 불러오기</button>
         </div>
       )}
       <ul className="mt-2 space-y-2">

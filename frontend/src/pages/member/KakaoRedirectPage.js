@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { finishKakaoLogin } from '../../api/kakaoApi';
-import { login } from '../../slices/loginSlice';
+import { startSession } from '../../atoms/signinState';
 
 const loginErrors = {
   400: '카카오 로그인을 다시 시작하세요.',
@@ -13,7 +12,6 @@ const loginErrors = {
 
 const KakaoRedirectPage = () => {
   const [params] = useSearchParams();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const started = useRef(false);
   const [error, setError] = useState('');
@@ -33,13 +31,13 @@ const KakaoRedirectPage = () => {
 
     finishKakaoLogin(code, state)
       .then((member) => {
-        dispatch(login(member));
+        startSession(member);
         navigate(member.social ? '/member/modify' : '/', { replace: true });
       })
       .catch((failure) => {
         setError(loginErrors[failure.response?.status] ?? '카카오 로그인에 실패했습니다.');
       });
-  }, [dispatch, navigate, params]);
+  }, [navigate, params]);
 
   return (
     <main className="m-6 text-center">

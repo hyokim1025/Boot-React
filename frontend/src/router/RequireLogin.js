@@ -1,8 +1,9 @@
-import { useSelector } from 'react-redux';
+import { useRecoilValue } from 'recoil';
 import { Navigate, useLocation } from 'react-router-dom';
+import signinState from '../atoms/signinState';
 
 const RequireLogin = ({ children }) => {
-  const member = useSelector((state) => state.loginSlice.member);
+  const { member } = useRecoilValue(signinState);
   const { pathname, search } = useLocation();
 
   return member ? children : (

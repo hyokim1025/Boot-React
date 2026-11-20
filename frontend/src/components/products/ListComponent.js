@@ -1,43 +1,23 @@
-import { useEffect, useState } from 'react';
-import { getImageUrl, getList } from '../../api/productsApi';
+import { useQuery } from '@tanstack/react-query';
+import { getImageUrl, getList, productListKey } from '../../api/productsApi';
 import useCustomLogin from '../../hooks/useCustomLogin';
 import useCustomMove from '../../hooks/useCustomMove';
 import FetchingModal from '../common/FetchingModal';
 import PageComponent from '../common/PageComponent';
 
 const ListComponent = () => {
-  const { exceptionHandle } = useCustomLogin();
-  const { page, size, refresh, moveToList, moveToRead } = useCustomMove('/products');
-  const [serverData, setServerData] = useState(null);
-  const [fetching, setFetching] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const controller = new AbortController();
-    setFetching(true);
-    setError('');
-
-    getList({ page, size }, controller.signal)
-      .then(setServerData)
-      .catch((failure) => {
-        if (!controller.signal.aborted) {
-          setServerData(null);
-          setError(exceptionHandle(failure, '상품 목록을 불러오지 못했습니다.'));
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setFetching(false);
-        }
-      });
-
-    return () => controller.abort();
-  }, [page, size, refresh, exceptionHandle]);
+  const { exceptionHandle, sessionId } = useCustomLogin();
+  const { page, size, moveToList, moveToRead } = useCustomMove('/products');
+  const { data: serverData, isPending, error } = useQuery({
+    queryKey: [...productListKey(sessionId), page, size],
+    queryFn: ({ signal }) => getList({ page, size }, { signal, sessionId }),
+    enabled: Boolean(sessionId),
+  });
 
   return (
     <div className="mx-2 mt-10 border-2 border-blue-100">
-      {fetching && <FetchingModal />}
-      {error && <p role="alert" className="p-6">{error}</p>}
+      {isPending && <FetchingModal />}
+      {error && <p role="alert" className="p-6">{exceptionHandle(error, '상품 목록을 불러오지 못했습니다.')}</p>}
       {serverData?.dtoList.length === 0 && <p className="p-6">등록된 상품이 없습니다.</p>}
       {serverData?.dtoList.length > 0 && (
         <div className="grid grid-cols-2 p-6">
