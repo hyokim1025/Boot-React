@@ -1,4 +1,6 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit';
+import * as cartApi from './api/cartApi';
+import cartSlice from './slices/cartSlice';
 import loginSlice from './slices/loginSlice';
 import { removeMemberCookie, saveMemberCookie } from './util/cookieUtil';
 
@@ -17,7 +19,8 @@ memberStorage.startListening({
 });
 
 export default configureStore({
-  reducer: { loginSlice },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().prepend(memberStorage.middleware),
+  reducer: { loginSlice, cartSlice },
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({ thunk: { extraArgument: cartApi } })
+    .prepend(memberStorage.middleware),
   devTools: false,
 });
